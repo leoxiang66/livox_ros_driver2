@@ -641,6 +641,7 @@ PublisherPtr Lddc::GetCurrentImuPublisher(uint8_t handle) {
 #elif defined BUILDING_ROS2
 std::shared_ptr<rclcpp::PublisherBase> Lddc::GetCurrentPublisher(uint8_t handle) {
   uint32_t queue_size = kMinEthPacketQueueSize;
+  // uint32_t queue_size = 1;
   if (use_multi_topic_) {
     if (!private_pub_[handle]) {
       char name_str[48];

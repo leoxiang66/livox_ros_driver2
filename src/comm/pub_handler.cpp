@@ -227,11 +227,44 @@ void PubHandler::CheckTimer(uint32_t id) {
 }
 
 void PubHandler::RawDataProcess() {
+  
+
+  // 等待时间 (纳秒)
+  // auto now = std::chrono::system_clock::now();
+  // auto now_ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(now);
+  // auto value = now_ns.time_since_epoch().count();
+
+  // long long remainder = value % 10000000000;
+  // long long wait_nanoseconds = (remainder == 0) ? 0 : (10000000000 - remainder);
+
+  // std::cout << "当前时间: " << value << "ns, 等待 " << wait_nanoseconds << "ns ..." << std::endl;
+  // std::this_thread::sleep_for(std::chrono::nanoseconds(wait_nanoseconds));
+  // std::cout << "等待结束,开始发布点云数据..." << std::endl;
+
+
+  // 等待时间 (微妙)
+  auto now = std::chrono::system_clock::now();
+  auto now_us = std::chrono::time_point_cast<std::chrono::microseconds>(now);
+  auto value = now_us.time_since_epoch().count();
+
+  int remainder = value % 10000000;
+  int wait_microseconds = (remainder == 0) ? 5000000 : (15000000 - remainder);
+
+  std::cout << "当前时间: " << value << "us, 等待 " << wait_microseconds << "us ..." << std::endl;
+  std::this_thread::sleep_for(std::chrono::microseconds(wait_microseconds));
+  std::cout << "等待结束,开始发布点云数据..." << std::endl;
+
+
   RawPacket raw_data;
+  std::deque<RawPacket>().swap(raw_packet_queue_); // 清空已经收集的数据, 从现在开始从头收集
+
+////////////////
+
   while (!is_quit_.load()) {
     {
       std::unique_lock<std::mutex> lock(packet_mutex_);
       if (raw_packet_queue_.empty()) {
+        // std::cout << "空queue..." << std::endl;
         packet_condition_.wait_for(lock, std::chrono::milliseconds(500));
         if (raw_packet_queue_.empty()) {
           continue;

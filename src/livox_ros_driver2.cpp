@@ -79,6 +79,8 @@ int main(int argc, char **argv) {
     publish_freq = publish_freq;
   }
 
+  // publish_freq = 60.0
+
   livox_node.future_ = livox_node.exit_signal_.get_future();
 
   /** Lidar data distribute control and lidar data source set */
@@ -153,6 +155,8 @@ DriverNode::DriverNode(const rclcpp::NodeOptions & node_options)
     publish_freq = publish_freq;
   }
 
+  // auto publish_freq2 = 40.0;
+
   future_ = exit_signal_.get_future();
 
   /** Lidar data distribute control and lidar data source set */
@@ -169,7 +173,7 @@ DriverNode::DriverNode(const rclcpp::NodeOptions & node_options)
     std::string cmdline_bd_code;
     this->get_parameter("cmdline_input_bd_code", cmdline_bd_code);
 
-    LdsLidar *read_lidar = LdsLidar::GetInstance(publish_freq);
+    LdsLidar *read_lidar = LdsLidar::GetInstance(publish_freq); // 这一行代码控制了实际的发布频率
     lddc_ptr_->RegisterLds(static_cast<Lds *>(read_lidar));
 
     if ((read_lidar->InitLdsLidar(user_config_path))) {
@@ -181,6 +185,7 @@ DriverNode::DriverNode(const rclcpp::NodeOptions & node_options)
     DRIVER_ERROR(*this, "Invalid data src (%d), please check the launch file", data_src);
   }
 
+  
   pointclouddata_poll_thread_ = std::make_shared<std::thread>(&DriverNode::PointCloudDataPollThread, this);
   imudata_poll_thread_ = std::make_shared<std::thread>(&DriverNode::ImuDataPollThread, this);
 }
