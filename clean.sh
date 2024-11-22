@@ -1,1 +1,3 @@
-rm -rf ../../build ../../install ../../log
+rm -rf ../../build/
+rm -rf ../../devel/
+rm -rf ../../install/
