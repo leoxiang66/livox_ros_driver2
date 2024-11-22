@@ -55,7 +55,7 @@ fi
 pushd `pwd` > /dev/null
 if [ $ROS_VERSION = ${VERSION_ROS1} ]; then
     cd ../../
-    catkin_make -DROS_EDITION=${VERSION_ROS1} catkin_make -DPYTHON_EXECUTABLE=/home/leo/miniconda3/envs/ros1/bin/python
+    catkin_make -DROS_EDITION=${VERSION_ROS1} -DPYTHON_EXECUTABLE=/home/leo/miniconda3/envs/ros1/bin/python
 elif [ $ROS_VERSION = ${VERSION_ROS2} ]; then
     cd ../../
     colcon build --cmake-args -DROS_EDITION=${VERSION_ROS2} -DHUMBLE_ROS=${ROS_HUMBLE}
