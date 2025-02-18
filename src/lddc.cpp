@@ -223,7 +223,7 @@ void Lddc::PublishCustomPointcloud(LidarDataQueue *queue, uint8_t index) {
       continue;
     }
 
-    CustomMsg livox_msg;
+    PointCloud2 livox_msg;
     InitCustomMsg(livox_msg, pkg, index);
     FillPointsToCustomMsg(livox_msg, pkg);
     PublishCustomPointData(livox_msg, index);
@@ -351,58 +351,58 @@ void Lddc::PublishPointcloud2Data(const uint8_t index, const uint64_t timestamp,
   }
 }
 
-void Lddc::InitCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg, uint8_t index) {
-  livox_msg.header.frame_id.assign(frame_id_);
+void Lddc::InitCustomMsg(PointCloud2& livox_msg, const StoragePacket& pkg, uint8_t index) {
+//   livox_msg.header.frame_id.assign(frame_id_);
 
-#ifdef BUILDING_ROS1
-  static uint32_t msg_seq = 0;
-  livox_msg.header.seq = msg_seq;
-  ++msg_seq;
-#endif
+// #ifdef BUILDING_ROS1
+//   static uint32_t msg_seq = 0;
+//   livox_msg.header.seq = msg_seq;
+//   ++msg_seq;
+// #endif
 
-  uint64_t timestamp = 0;
-  if (!pkg.points.empty()) {
-    timestamp = pkg.base_time;
-  }
-  livox_msg.timebase = timestamp;
+//   uint64_t timestamp = 0;
+//   if (!pkg.points.empty()) {
+//     timestamp = pkg.base_time;
+//   }
+//   livox_msg.timebase = timestamp;
 
-#ifdef BUILDING_ROS1
-  livox_msg.header.stamp = ros::Time(timestamp / 1000000000.0);
-#elif defined BUILDING_ROS2
-  livox_msg.header.stamp = rclcpp::Time(timestamp);
-#endif
+// #ifdef BUILDING_ROS1
+//   livox_msg.header.stamp = ros::Time(timestamp / 1000000000.0);
+// #elif defined BUILDING_ROS2
+//   livox_msg.header.stamp = rclcpp::Time(timestamp);
+// #endif
 
-  livox_msg.point_num = pkg.points_num;
-  if (lds_->lidars_[index].lidar_type == kLivoxLidarType) {
-    livox_msg.lidar_id = lds_->lidars_[index].handle;
-  } else {
-    printf("Init custom msg lidar id failed, the index:%u.\n", index);
-    livox_msg.lidar_id = 0;
-  }
+//   livox_msg.point_num = pkg.points_num;
+//   if (lds_->lidars_[index].lidar_type == kLivoxLidarType) {
+//     livox_msg.lidar_id = lds_->lidars_[index].handle;
+//   } else {
+//     printf("Init custom msg lidar id failed, the index:%u.\n", index);
+//     livox_msg.lidar_id = 0;
+//   }
 }
 
-void Lddc::FillPointsToCustomMsg(CustomMsg& livox_msg, const StoragePacket& pkg) {
-  uint32_t points_num = pkg.points_num;
-  const std::vector<PointXyzlt>& points = pkg.points;
-  for (uint32_t i = 0; i < points_num; ++i) {
-    CustomPoint point;
-    point.x = points[i].x;
-    point.y = points[i].y;
-    point.z = points[i].z;
-    point.reflectivity = points[i].intensity;
-    point.tag = points[i].tag;
-    point.line = points[i].line;
-    point.offset_time = static_cast<uint32_t>(points[i].offset_time - pkg.base_time);
+void Lddc::FillPointsToCustomMsg(PointCloud2& livox_msg, const StoragePacket& pkg) {
+  // uint32_t points_num = pkg.points_num;
+  // const std::vector<PointXyzlt>& points = pkg.points;
+  // for (uint32_t i = 0; i < points_num; ++i) {
+  //   CustomPoint point;
+  //   point.x = points[i].x;
+  //   point.y = points[i].y;
+  //   point.z = points[i].z;
+  //   point.reflectivity = points[i].intensity;
+  //   point.tag = points[i].tag;
+  //   point.line = points[i].line;
+  //   point.offset_time = static_cast<uint32_t>(points[i].offset_time - pkg.base_time);
 
-    livox_msg.points.push_back(std::move(point));
-  }
+  //   livox_msg.points.push_back(std::move(point));
+  // }
 }
 
-void Lddc::PublishCustomPointData(const CustomMsg& livox_msg, const uint8_t index) {
+void Lddc::PublishCustomPointData(const PointCloud2& livox_msg, const uint8_t index) {
 #ifdef BUILDING_ROS1
   PublisherPtr publisher_ptr = Lddc::GetCurrentPublisher(index);
 #elif defined BUILDING_ROS2
-  Publisher<CustomMsg>::SharedPtr publisher_ptr = std::dynamic_pointer_cast<Publisher<CustomMsg>>(GetCurrentPublisher(index));
+  Publisher<PointCloud2>::SharedPtr publisher_ptr = std::dynamic_pointer_cast<Publisher<PointCloud2>>(GetCurrentPublisher(index));
 #endif
 
   if (kOutputToRos == output_type_) {
@@ -533,7 +533,7 @@ std::shared_ptr<rclcpp::PublisherBase> Lddc::CreatePublisher(uint8_t msg_type,
     } else if (kLivoxCustomMsg == msg_type) {
       DRIVER_INFO(*cur_node_,
           "%s publish use livox custom format", topic_name.c_str());
-      return cur_node_->create_publisher<CustomMsg>(topic_name, queue_size);
+      return cur_node_->create_publisher<PointCloud2>(topic_name, queue_size);
     }
 #if 0
     else if (kPclPxyziMsg == msg_type)  {
@@ -588,7 +588,7 @@ PublisherPtr Lddc::GetCurrentPublisher(uint8_t index) {
           "%s publish use PointCloud2 format, set ROS publisher queue size %d",
           name_str, queue_size);
     } else if (kLivoxCustomMsg == transfer_format_) {
-      **pub = cur_node_->GetNode().advertise<livox_ros_driver2::CustomMsg>(name_str,
+      **pub = cur_node_->GetNode().advertise<livox_ros_driver2::PointCloud2>(name_str,
                                                                 queue_size);
       DRIVER_INFO(*cur_node_,
           "%s publish use livox custom format, set ROS publisher queue size %d",
